@@ -71,7 +71,7 @@ export default function Gameboard({navigation, route}) {
             </Col>
         );
     }
-
+    
     const pointsToSelectRow = [];
     for (let diceButton = 0; diceButton < MAX_SPOT; diceButton++){
         pointsToSelectRow.push(
