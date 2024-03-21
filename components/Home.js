@@ -61,7 +61,7 @@ export default function Home({navigation}) {
             </Text>
             <Text>Good luck, {playerName}</Text>
             <Pressable
-            onPress={() => navigation.navigate('Gameboard')}>
+            onPress={() => navigation.navigate('Gameboard', {player: playerName})}>
                 <Text>PLAY</Text>
             </Pressable>
             </>

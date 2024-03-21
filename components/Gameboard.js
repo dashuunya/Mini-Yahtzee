@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import styles from '../style/style';
 import Header from './Header';
@@ -17,7 +17,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 let board = [];
 
-export default function Gameboard() {
+export default function Gameboard({navigation, route}) {
  
     const [nbrOfThrowsLeft, setNbrOfThrowsLeft] = useState(NBR_OF_THROWS);
     const [status, setStatus] = useState('Throw dices');
@@ -36,6 +36,12 @@ export default function Gameboard() {
      useState(new Array(MAX_SPOT).fill(0));
 
      const [playerName, setPlayerName] = useState('');
+
+     useEffect(() => {
+        if(playerName === '' && route.params?.player) {
+            setPlayerName(route.params.player);
+        }
+     }, []);
      
     const row = [];
     for (let dice = 0; dice < NBR_OF_DICES; dice++) {
@@ -57,11 +63,11 @@ export default function Gameboard() {
       );
     }
 
-    const pointRow = [];
+    const pointsRow = [];
     for (let spot = 0; spot < MAX_SPOT; spot++){
-        pointsToSelectRow.push(
+        pointsRow.push(
             <Col key={"pointsRow" + spot}>
-                <Text key={"pointsRow" + spot}>0</Text>
+                <Text key={"pointsRow" + spot}>{getSpotTotal(spot)}</Text>
             </Col>
         );
     }
@@ -71,7 +77,8 @@ export default function Gameboard() {
         pointsToSelectRow.push(
             <Col key={"buttonsRow" + diceButton}>
                 <Pressable
-                key={"buttonsRow" + diceButton}>
+                key={"buttonsRow" + diceButton}
+                onPress={() => selectDicePoints(diceButton)}>
                     <MaterialCommunityIcons
                     key={"buttonsRow" + diceButton}
                     name={"numeric-" + (diceButton + 1) + "-circle"}
@@ -99,32 +106,46 @@ export default function Gameboard() {
     }
 
     const selectDicePoints = (i) => {
-        let selectedPoints = [...seletedDicePoints];
+        if(nbrOfThrowsLeft === 0){
+        let selected = [...selectedDices];
+        let selectedPoints = [...selectedDicePoints];
         let points = [...dicePointsTotal];
+        if(!selectedPoints[i]){
         selectedPoints[i] = true;
         let nbrOfDices = 
-        diceSpots.reduce(
-            (total, x) => (x == (i = 1) ? total + 1: total),0);
+        diceSpots.reduce
+            ((total, x) => (x == (i = 1) ? total + 1: total),0);
         points[i] = nbrOfDices * (i + 1);
         setDicePointsTotal(points);
         setSelectedDicePoints(selectedPoints);
+        setNbrOfThrowsLeft(NBR_OF_THROWS);
         return points[i];
+    }
+    else {
+        setStatus('You already selected points for '+ (i + 1));
+    }
+}
+else {
+    setStatus("Throw " + NBR_OF_THROWS +" times before setting points.")
+}
     }
 
     const throwDices = () => {
+        let updatedDiceSpots = [...diceSpots];
         for (let i = 0; i < NBR_OF_DICES; i++) {
           if (!selectedDices[i]) {
             let randomNumber = Math.floor(Math.random() * MAX_SPOT + 1);
+            updatedDiceSpots[i]= randomNumber;
             board[i] = 'dice-' + randomNumber;
           }
         }
+        setDiceSpots(updatedDiceSpots);
         setNbrOfThrowsLeft(nbrOfThrowsLeft-1);
       }
 
       function getSpotTotal(i) {
         return dicePointsTotal[i];
       }
-
 
     return (
         <>
@@ -149,4 +170,4 @@ export default function Gameboard() {
         <Footer/>
         </>
         )
-}
+    }
